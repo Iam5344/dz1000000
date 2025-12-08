@@ -1,87 +1,68 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
-class Program
+namespace GenericMedian
 {
-    enum TaskType { One, Two, Three }
-
-    static void Main(string[] args)
+    class Program
     {
-
-        Console.Write("Введіть вираз (+, -): ");
-        string expr = Console.ReadLine();
-
-        int result = 0;
-        int number = 0;
-        char op = '+';
-
-        for (int i = 0; i < expr.Length; i++)
+        static T FindMedian<T>(IEnumerable<T> collection) where T : IComparable<T>
         {
-            char c = expr[i];
-
-            if (char.IsDigit(c))
+            if (collection == null || !collection.Any())
             {
-                number = number * 10 + (c - '0');
+                throw new ArgumentException("Колекція не може бути порожньою");
             }
-            else if (c == '+' || c == '-')
-            {
-                if (op == '+') result += number;
-                else result -= number;
 
-                number = 0;
-                op = c;
+            var sorted = collection.OrderBy(x => x).ToList();
+            int count = sorted.Count;
+            int middle = count / 2;
+
+            if (count % 2 == 1)
+            {
+                return sorted[middle];
             }
-        }
-
-        if (op == '+') result += number;
-        else result -= number;
-
-        Console.WriteLine("Результат: " + result);
-        Console.WriteLine();
-
-        if (args.Length < 2)
-        {
-            Console.WriteLine("Потрібно передати: текст зсув");
-        }
-        else
-        {
-            string text = args[0];
-            int shift = int.Parse(args[1]);
-
-            string encrypted = "";
-
-            for (int i = 0; i < text.Length; i++)
+            else
             {
-                char ch = text[i];
-
-                if (char.IsLetter(ch))
+                if (typeof(T) == typeof(int) || typeof(T) == typeof(double) || typeof(T) == typeof(decimal))
                 {
-                    char baseChar = char.IsUpper(ch) ? 'A' : 'a';
-                    char enc = (char)(baseChar + (ch - baseChar + shift) % 26);
-                    encrypted += enc;
+                    dynamic val1 = sorted[middle - 1];
+                    dynamic val2 = sorted[middle];
+                    return (val1 + val2) / 2;
                 }
                 else
                 {
-                    encrypted += ch;
+                    return sorted[middle - 1];
                 }
             }
-
-            Console.WriteLine("Результат: " + encrypted);
         }
 
-        Console.WriteLine();
+        static void Main(string[] args)
+        {
+            Console.WriteLine("Приклад 1: Непарна кількість чисел ");
+            var numbers1 = new List<int> { 5, 2, 9, 1, 6 };
+            Console.WriteLine($"Колекція: [{string.Join(", ", numbers1)}]");
+            var median1 = FindMedian(numbers1);
+            Console.WriteLine($"Медіана = {median1}");
 
-        Console.Write("Введіть неприпустиме слово: ");
-        string bad = Console.ReadLine();
+            Console.WriteLine("\n Приклад 2: Непарна кількість рядків");
+            var strings1 = new List<string> { "apple", "banana", "cherry", "date", "fig" };
+            Console.WriteLine($"Колекція: [{string.Join(", ", strings1)}]");
+            var median2 = FindMedian(strings1);
+            Console.WriteLine($"Медіана = {median2}");
 
-        Console.WriteLine("Введіть текст:");
-        string input = Console.ReadLine();
+            Console.WriteLine("\nПриклад 3: Парна кількість чисел");
+            var numbers2 = new List<int> { 4, 1, 7, 9, 3, 8 };
+            Console.WriteLine($"Колекція: [{string.Join(", ", numbers2)}]");
+            var median3 = FindMedian(numbers2);
+            Console.WriteLine($"Медіана = {median3}");
 
-        string stars = new string('*', bad.Length);
-        string resultText = input.Replace(bad, stars, StringComparison.OrdinalIgnoreCase);
-        int count = input.Split(bad, StringSplitOptions.None).Length - 1;
+            Console.WriteLine("\nПриклад 4: Парна кількість рядків ");
+            var strings2 = new List<string> { "apple", "banana", "cherry", "date" };
+            Console.WriteLine($"Колекція: [{string.Join(", ", strings2)}]");
+            var median4 = FindMedian(strings2);
+            Console.WriteLine($"Медіана = {median4}");
 
-        Console.WriteLine("\nРезультат:");
-        Console.WriteLine(resultText);
-        Console.WriteLine("Статистика: " + count + " заміни.");
+            Console.ReadKey();
+        }
     }
 }
